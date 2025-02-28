@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm p-4 mt-5">
+            <h2 class="text-center mb-4">Buyer Dashboard</h2>
+            {% if renter.age != NULL %}
+                <p><strong>Age:</strong> {{ renter.age }}</p>
+                <p><strong>Years Rented:</strong> {{ renter.years_rented }}</p>
+                <p><strong>Occupation:</strong> {{ renter.occupation or 'Not provided' }}</p>
+            {% else %}
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.age.label(class="form-label") }}
+                        {{ form.age(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.credit_score.label(class="form-label") }}
+                        {{ form.credit_score(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.annual_income.label(class="form-label") }}
+                        {{ form.annual_income(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.occupation.label(class="form-label") }}
+                        {{ form.occupation(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.years_rented.label(class="form-label") }}
+                        {{ form.years_rented(class="form-control") }}
+                    </div>
+                    <div class="d-grid">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

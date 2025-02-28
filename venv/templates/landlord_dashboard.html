@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm p-4 mt-5">
+            <h2 class="text-center mb-4">Landlord Dashboard</h2>
+            {% if landlord.real_estate_company %}
+                <p><strong>Company:</strong> {{ landlord.real_estate_company }}</p>
+                <p><strong>Name:</strong> {{ landlord.name }}</p>
+                <p><strong>Contact:</strong> {{ landlord.contact_info }}</p>
+                <p><strong>Locations:</strong> {{ landlord.locations }}</p>
+            {% else %}
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.real_estate_company.label(class="form-label") }}
+                        {{ form.real_estate_company(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.name.label(class="form-label") }}
+                        {{ form.name(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.contact_info.label(class="form-label") }}
+                        {{ form.contact_info(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.locations.label(class="form-label") }}
+                        {{ form.locations(class="form-control") }}
+                    </div>
+                    <div class="d-grid">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            {% endif %}
+            <hr>
+            <h3 class="mt-4">Add Property</h3>
+            <form method="POST">
+                {{ property_form.hidden_tag() }}
+                <div class="mb-3">
+                    {{ property_form.address.label(class="form-label") }}
+                    {{ property_form.address(class="form-control") }}
+                </div>
+                <div class="mb-3">
+                    {{ property_form.rent.label(class="form-label") }}
+                    {{ property_form.rent(class="form-control") }}
+                </div>
+                <div class="d-grid">
+                    {{ property_form.submit(class="btn btn-primary") }}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,24 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+}
+.navbar {
+    background-color: #516897 !important;
+}
+.navbar-brand, .nav-link {
+    color: #f1f3f7 !important;
+}
+.nav-link:hover {
+    text-decoration: underline;
+}
+.bg-secondary {
+    background-color: #D3D3D3 !important;
+}
+.btn-primary {
+    background-color: #718bbe !important;
+    color: #333 !important;
+    border: none;
+}
+.btn-primary:hover {
+    background-color: #9ab6ec !important;
+}

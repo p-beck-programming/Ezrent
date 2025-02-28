@@ -1,64 +1,72 @@
-import os
-from flask import Flask, render_template, redirect, url_for, flash
-from flask_sqlalchemy import SQLAlchemy
-from flask_bcrypt import Bcrypt
-from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+# app.py
+from flask import Flask, render_template, request, redirect, url_for, flash
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from werkzeug.security import generate_password_hash, check_password_hash
+from database import db, User, Renter, Landlord, init_db
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField
-from wtforms.validators import DataRequired, Length, EqualTo
-from dotenv import load_dotenv
-
+from wtforms import StringField, PasswordField, IntegerField, FloatField, SubmitField, SelectField
+from wtforms.validators import DataRequired, Email
+import os
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'fallback_secret_key')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///app.db')
+app.config['SECRET_KEY'] = 'your-secret-key'  # Replace with a secure key
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(os.getcwd(), 'equitrack.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-db = SQLAlchemy(app)
-bcrypt = Bcrypt(app)
+db.init_app(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
-class User(db.Model, UserMixin):
-    def __init__(self, id, username, password):
-        self.id = id
-        self.username = username
-        self.password = password
-    __tablename__ = 'users'
-    id = db.Column(db.String(20), unique=True, nullable=False, primary_key=True)
-    username = db.Column(db.String(60), nullable=False)
-    password = db.Column(db.String(60), nullable=False)
+# Forms
+class RegisterForm(FlaskForm):
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    password = PasswordField('Password', validators=[DataRequired()])
+    account_type = SelectField('Account Type', choices=[('renter', 'Renter'), ('landlord', 'Landlord')], validators=[DataRequired()])
+    submit = SubmitField('Register')
 
+class LoginForm(FlaskForm):
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    password = PasswordField('Password', validators=[DataRequired()])
+    submit = SubmitField('Login')
+
+class RenterProfileForm(FlaskForm):
+    age = IntegerField('Age', validators=[DataRequired()])
+    credit_score = IntegerField('Credit Score', validators=[DataRequired()])
+    annual_income = FloatField('Annual Income', validators=[DataRequired()])
+    occupation = StringField('Occupation')  # Optional
+    years_rented = IntegerField('Years Rented', validators=[DataRequired()])
+    submit = SubmitField('Save Profile')
+
+class LandlordProfileForm(FlaskForm):
+    real_estate_company = StringField('Real Estate Company', validators=[DataRequired()])
+    name = StringField('Name', validators=[DataRequired()])
+    contact_info = StringField('Contact Info', validators=[DataRequired()])
+    locations = StringField('Locations (comma-separated)', validators=[DataRequired()])
+    submit = SubmitField('Save Profile')
+
+class PropertyForm(FlaskForm):
+    address = StringField('Property Address', validators=[DataRequired()])
+    rent = IntegerField('Rent', validators=[DataRequired()])
+    submit = SubmitField('Add Property')
+
+# User loader
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-class RegistrationForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired(), Length(min=4, max=20)])
-    password = PasswordField('Password', validators=[DataRequired(), Length(min=6)])
-    confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
-    submit = SubmitField('Sign Up') 
-
-class LoginForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired()])
-    password = PasswordField('Password', validators=[DataRequired()])
-    submit = SubmitField('Login')
-
-#<-----------Routes------------------------------------------>
-
+# Routes
 @app.route('/')
-def home():
+def index():
     return render_template('index.html')
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    form = RegistrationForm()
+    form = RegisterForm()
     if form.validate_on_submit():
-        hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-        user = User(username=form.username.data, password=hashed_password)
+        user = User(email=form.email.data, 
+                    password=generate_password_hash(form.password.data), 
+                    account_type=form.account_type.data)
         db.session.add(user)
         db.session.commit()
-        flash('Account created! You can now log in.', 'success')
         return redirect(url_for('login'))
     return render_template('register.html', form=form)
 
@@ -66,26 +74,49 @@ def register():
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(username=form.username.data).first()
-        if user and bcrypt.check_password_hash(user.password, form.password.data):
+        user = User.query.filter_by(email=form.email.data).first()
+        if user and check_password_hash(user.password, form.password.data):
             login_user(user)
-            flash('Login successful!', 'success')
             return redirect(url_for('dashboard'))
-        else:
-            flash('Login failed. Check username and password.', 'danger')
+        flash('Login failed. Check your credentials.', 'danger')
     return render_template('login.html', form=form)
-
-@app.route('/dashboard')
-@login_required
-def dashboard():
-    return render_template('dashboard.html', username=current_user.username)
 
 @app.route('/logout')
 @login_required
 def logout():
     logout_user()
-    flash('Logged out successfully!', 'info')
-    return redirect(url_for('login'))
+    return redirect(url_for('logout'))
+
+@app.route('/dashboard', methods=['GET', 'POST'])
+@login_required
+def dashboard():
+    if current_user.account_type == 'renter':
+        renter = Renter.query.get(current_user.id)
+        form = RenterProfileForm()
+        if form.validate_on_submit() and not renter.age:  # Only if not already set
+            renter.age = form.age.data
+            renter.credit_score = form.credit_score.data
+            renter.annual_income = form.annual_income.data
+            renter.occupation = form.occupation.data
+            renter.years_rented = form.years_rented.data
+            db.session.commit()
+            flash('Profile updated successfully!', 'success')
+        return render_template('renter_dashboard.html', renter=renter, form=form)
+    else:
+        landlord = Landlord.query.get(current_user.id)
+        form = LandlordProfileForm()
+        property_form = PropertyForm()
+        if form.validate_on_submit() and not landlord.real_estate_company:
+            landlord.real_estate_company = form.real_estate_company.data
+            landlord.name = form.name.data
+            landlord.contact_info = form.contact_info.data
+            landlord.locations = form.locations.data
+            db.session.commit()
+            flash('Profile updated successfully!', 'success')
+        if property_form.validate_on_submit():
+            # Placeholder for property logic (expand later)
+            flash('Property added successfully!', 'success')
+        return render_template('landlord_dashboard.html', landlord=landlord, form=form, property_form=property_form)
 
 @app.route('/about')
 def about():
@@ -95,8 +126,11 @@ def about():
 def contact():
     return render_template('contact.html')
 
-
 if __name__ == '__main__':
+    init_db(app)  # Initialize database
     with app.app_context():
-        db.create_all()
+        test_user = User(email='test@example.com', password=generate_password_hash('password123'), account_type='renter')
+        db.session.add(test_user)
+        db.session.commit()
+        print("Database tables:", db.engine.table_names())
     app.run(debug=True)
