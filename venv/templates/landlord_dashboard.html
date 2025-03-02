@@ -3,12 +3,12 @@
 <div class="row justify-content-center">
     <div class="col-md-8">
         <div class="card shadow-sm p-4 mt-5">
-            <h2 class="text-center mb-4">Landlord Dashboard</h2>
-            {% if landlord.real_estate_company %}
-                <p><strong>Company:</strong> {{ landlord.real_estate_company }}</p>
-                <p><strong>Name:</strong> {{ landlord.name }}</p>
-                <p><strong>Contact:</strong> {{ landlord.contact_info }}</p>
-                <p><strong>Locations:</strong> {{ landlord.locations }}</p>
+            <h2 class="text-center mb-4">Seller Dashboard</h2>
+            {% if seller.real_estate_company %}
+                <p><strong>Company:</strong> {{ seller.real_estate_company }}</p>
+                <p><strong>Name:</strong> {{ seller.name }}</p>
+                <p><strong>Contact:</strong> {{ seller.contact_info }}</p>
+                <p><strong>Locations:</strong> {{ seller.locations }}</p>
             {% else %}
                 <form method="POST">
                     {{ form.hidden_tag() }}

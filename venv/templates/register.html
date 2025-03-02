@@ -1,11 +1,26 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Register</h2>
-<form method="POST">
-    {{ form.hidden_tag() }}
-    {{ form.email.label }} {{ form.email }}<br>
-    {{ form.password.label }} {{ form.password }}<br>
-    {{ form.account_type.label }} {{ form.account_type }}<br>
-    {{ form.submit }}
-</form>
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm p-4 mt-5">
+            <h2 class="text-center mb-4">Register</h2>
+            <form method="POST">
+                {{ form.hidden_tag() }}
+                <div class="mb-3">
+                    {{ form.email.label(class="form-control") }} 
+                    {{ form.email(class="form-control") }}
+                </div>
+                <div class="mb-3">
+                    {{ form.password.label(class="form-control") }} 
+                    {{ form.password(class="form-control") }}
+                </div>Select 
+                    {{ form.account_type.label(class="form-control") }}<br>
+                    {{ form.account_type(class="form-control btn btn-outline bg-secondary") }}<br><hr>
+                <div class="d-grid">
+                    {{ form.submit(class="btn btn-primary") }}
+                </div>    
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}

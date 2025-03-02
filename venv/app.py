@@ -2,7 +2,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from database import db, User, Renter, Landlord, init_db
+from database import db, User, Buyer, Seller, init_db
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, IntegerField, FloatField, SubmitField, SelectField
 from wtforms.validators import DataRequired, Email
@@ -20,7 +20,7 @@ login_manager.login_view = 'login'
 class RegisterForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired()])
-    account_type = SelectField('Account Type', choices=[('renter', 'Renter'), ('landlord', 'Landlord')], validators=[DataRequired()])
+    account_type = SelectField('Account Type', choices=[('buyer', 'Buyer'), ('seller', 'Seller')], validators=[DataRequired()])
     submit = SubmitField('Register')
 
 class LoginForm(FlaskForm):
@@ -28,7 +28,7 @@ class LoginForm(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired()])
     submit = SubmitField('Login')
 
-class RenterProfileForm(FlaskForm):
+class BuyerProfileForm(FlaskForm):
     age = IntegerField('Age', validators=[DataRequired()])
     credit_score = IntegerField('Credit Score', validators=[DataRequired()])
     annual_income = FloatField('Annual Income', validators=[DataRequired()])
@@ -36,7 +36,7 @@ class RenterProfileForm(FlaskForm):
     years_rented = IntegerField('Years Rented', validators=[DataRequired()])
     submit = SubmitField('Save Profile')
 
-class LandlordProfileForm(FlaskForm):
+class SellerProfileForm(FlaskForm):
     real_estate_company = StringField('Real Estate Company', validators=[DataRequired()])
     name = StringField('Name', validators=[DataRequired()])
     contact_info = StringField('Contact Info', validators=[DataRequired()])
@@ -90,33 +90,33 @@ def logout():
 @app.route('/dashboard', methods=['GET', 'POST'])
 @login_required
 def dashboard():
-    if current_user.account_type == 'renter':
-        renter = Renter.query.get(current_user.id)
-        form = RenterProfileForm()
-        if form.validate_on_submit() and not renter.age:  # Only if not already set
-            renter.age = form.age.data
-            renter.credit_score = form.credit_score.data
-            renter.annual_income = form.annual_income.data
-            renter.occupation = form.occupation.data
-            renter.years_rented = form.years_rented.data
+    if current_user.account_type == 'buyer':
+        buyer = Buyer.query.get(current_user.id)
+        form = BuyerProfileForm()
+        if form.validate_on_submit() and not buyer.age:  # Only if not already set
+            buyer.age = form.age.data
+            buyer.credit_score = form.credit_score.data
+            buyer.annual_income = form.annual_income.data
+            buyer.occupation = form.occupation.data
+            buyer.years_rented = form.years_rented.data
             db.session.commit()
             flash('Profile updated successfully!', 'success')
-        return render_template('renter_dashboard.html', renter=renter, form=form)
+        return render_template('renter_dashboard.html', buyer=buyer, form=form)
     else:
-        landlord = Landlord.query.get(current_user.id)
-        form = LandlordProfileForm()
+        seller = Seller.query.get(current_user.id)
+        form = SellerProfileForm()
         property_form = PropertyForm()
-        if form.validate_on_submit() and not landlord.real_estate_company:
-            landlord.real_estate_company = form.real_estate_company.data
-            landlord.name = form.name.data
-            landlord.contact_info = form.contact_info.data
-            landlord.locations = form.locations.data
+        if form.validate_on_submit() and not seller.real_estate_company:
+            seller.real_estate_company = form.real_estate_company.data
+            seller.name = form.name.data
+            seller.contact_info = form.contact_info.data
+            seller.locations = form.locations.data
             db.session.commit()
             flash('Profile updated successfully!', 'success')
         if property_form.validate_on_submit():
             # Placeholder for property logic (expand later)
             flash('Property added successfully!', 'success')
-        return render_template('landlord_dashboard.html', landlord=landlord, form=form, property_form=property_form)
+        return render_template('landlord_dashboard.html', seller=seller, form=form, property_form=property_form)
 
 @app.route('/about')
 def about():
@@ -129,7 +129,7 @@ def contact():
 if __name__ == '__main__':
     init_db(app)  # Initialize database
     with app.app_context():
-        test_user = User(email='test@example.com', password=generate_password_hash('password123'), account_type='renter')
+        test_user = User(email='test@example.com', password=generate_password_hash('password123'), account_type='buyer')
         db.session.add(test_user)
         db.session.commit()
         print("Database tables:", db.engine.table_names())

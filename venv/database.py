@@ -10,14 +10,14 @@ class User(db.Model, UserMixin):
     password = db.Column(db.String(150), nullable=False)
     account_type = db.Column(db.String(50), nullable=False)  # 'landlord' or 'renter'
 
-class Renter(User):
+class Buyer(User):
     age = db.Column(db.Integer)
     credit_score = db.Column(db.Integer)  # Visible only to landlord
     annual_income = db.Column(db.Float)   # Visible only to landlord
     occupation = db.Column(db.String(100))  # Optional
     years_rented = db.Column(db.Integer)
 
-class Landlord(User):
+class Seller(User):
     real_estate_company = db.Column(db.String(150))
     name = db.Column(db.String(150))
     contact_info = db.Column(db.String(150))

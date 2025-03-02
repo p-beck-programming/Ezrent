@@ -4,10 +4,10 @@
     <div class="col-md-8">
         <div class="card shadow-sm p-4 mt-5">
             <h2 class="text-center mb-4">Buyer Dashboard</h2>
-            {% if renter.age != NULL %}
-                <p><strong>Age:</strong> {{ renter.age }}</p>
-                <p><strong>Years Rented:</strong> {{ renter.years_rented }}</p>
-                <p><strong>Occupation:</strong> {{ renter.occupation or 'Not provided' }}</p>
+            {% if buyer.age != NULL %}
+                <p><strong>Age:</strong> {{ buyer.age }}</p>
+                <p><strong>Years Rented:</strong> {{ buyer.years_rented }}</p>
+                <p><strong>Occupation:</strong> {{ buyer.occupation or 'Not provided' }}</p>
             {% else %}
                 <form method="POST">
                     {{ form.hidden_tag() }}

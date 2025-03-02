@@ -22,3 +22,6 @@ body {
 .btn-primary:hover {
     background-color: #9ab6ec !important;
 }
+.form-title {
+    background-color: #9ab6ec !important; 
+}
