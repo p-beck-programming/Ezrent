@@ -6,3 +6,12 @@ notes.txt
 
 equitrack.db
 
+venv/bin/
+
+venv/lib/
+
+venv/lib64/
+
+venv/include/
+
+
